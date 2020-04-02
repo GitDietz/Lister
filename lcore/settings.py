@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
+import datetime
 import os
 import logging.config
 from decouple import config
@@ -28,6 +29,8 @@ EMAIL_FROM = config('MAIL_SENDER')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('NEW_SK')
 PASSWORD_RESET_TIMEOUT = 600
+ACCOUNT_INVITATION_DAYS = datetime.timedelta(days=3)
+REGISTRATIONS = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -49,7 +52,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     #local
     'the_list',
-    'accounts',
+    'act',
 ]
 
 SITE_ID = 1

@@ -165,8 +165,8 @@ def register_view(request):
             # return redirect('invitations:compile_confirmation', group_id=new_group.pk, group_name=new_group.name)
             coded_user = force_text(urlsafe_base64_encode(force_bytes(user.pk)))
             coded_group = force_text(urlsafe_base64_encode(force_bytes(new_group.id)))
-            # token = account_activation_token.make_token(user)
-            token = None
+            token = account_activation_token.make_token(user)
+
             email_kwargs = {"user": user.first_name,
                             "coded_user": coded_user,
                             'coded_group': coded_group,

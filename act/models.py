@@ -1,22 +1,11 @@
-import os
-import random
-from datetime import date, timedelta, datetime
-import re
-import uuid
-
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.conf import settings
-# from django.core.mail import send_mail
+from django.core.mail import send_mail
 from django.db import models
-from django.template.loader import render_to_string
-from django.utils.http import int_to_base36
-# from django.utils.hashcompat import sha_constructor
-from hashlib import sha1 as sha_constructor
-from django.utils.translation import ugettext_lazy as _
 
-from the_list.models import ShopGroup
-
+from datetime import datetime
+import re
 
 class InvitationKeyManager(models.Manager):
     def get_key(self, invitation_key):
@@ -58,7 +47,7 @@ class InvitationKey(models.Model):
     """
     for invites being sent
     """
-    key = models.CharField(verbose_name=_('account_activation_token'), max_length=40)
+    key = models.CharField('account_activation_token', max_length=40)
     date_invited = models.DateTimeField(auto_now_add=True)
     from_user = models.ForeignKey(User, related_name='invitations_sent', on_delete=models.CASCADE)
     registrant = models.ForeignKey(User, null=True, blank=True, related_name='invitations_used', on_delete=models.CASCADE)
@@ -68,10 +57,10 @@ class InvitationKey(models.Model):
     objects = InvitationKeyManager()
 
     class Meta:
-        app_label = 'invitation'
+        app_label = 'act'
 
-    def __unicode__(self):
-        return u"Invitation from %s on %s" % (self.from_user, self.date_invited)
+    def __str__(self):
+        return f"Invitation from {self.from_user} on {self.date_invited}"
 
     def is_usable(self):
         """
@@ -79,7 +68,6 @@ class InvitationKey(models.Model):
         """
         return self.registrant is None and not self.key_expired()
 
-    # noinspection PyUnresolvedReferences
     def key_expired(self):
         """
         Determine whether this ``InvitationKey`` has expired, returning
@@ -90,7 +78,6 @@ class InvitationKey(models.Model):
         the number of days after invite during which a user is allowed to
         create their account); if the result is less than or equal to the
         current date, the key has expired and this method returns ``True``.
-
         """
 
         expiration_date = self.date_invited + settings.ACCOUNT_INVITATION_DAYS
@@ -100,7 +87,7 @@ class InvitationKey(models.Model):
             return True
             # self.date_invited + expiration_date <= datetime.datetime.now()
 
-    key_expired.boolean = True
+    #key_expired.boolean = True
 
     def mark_used(self, registrant):
         """
@@ -109,4 +96,3 @@ class InvitationKey(models.Model):
         self.registrant = registrant
         self.invite_used = True
         self.save()
-

@@ -12,6 +12,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .email import email_confirmation
 from .forms import UserLoginForm, UserRegisterForm, UserLoginEmailForm
 from .models import InvitationKey
+from .token import account_activation_token
 from the_list.models import ShopGroup
 # from invitation.token import account_activation_token
 
@@ -44,6 +45,16 @@ def create_username(first_name, last_name):
         new_username = create_next_increment_name(new_username)
         this_user = User.objects.all().filter(Q(username__iexact=new_username))
     return new_username
+
+
+def account_activation_sent(request):
+    content_body = ('<p>Thank you for registering!<br>'
+                    'To complete the process, check your mailbox for an email from us, then '
+                    '<br> Click on the link that will bring you back to the site to do so<br><br>'
+                    'See you soon ....</p>')
+    context = {'title': 'Sent email',
+               'content_body': content_body}
+    return render(request, 'activation_sent.html', context)
 
 
 def login_view(request):
@@ -161,25 +172,26 @@ def register_view(request):
             new_group = ShopGroup.objects.create_group(target_group, user)
             new_group.purpose = form.cleaned_data.get('purpose')
             new_group.save()
-            # temporary break out to test the register/confirm email
-            # return redirect('invitations:compile_confirmation', group_id=new_group.pk, group_name=new_group.name)
+
             coded_user = force_text(urlsafe_base64_encode(force_bytes(user.pk)))
             coded_group = force_text(urlsafe_base64_encode(force_bytes(new_group.id)))
-            # token = account_activation_token.make_token(user)
-            token = None
+            token = account_activation_token.make_token(user)
+            # TODO: fix the token
+            # token = None
             email_kwargs = {"user": user.first_name,
                             "coded_user": coded_user,
                             'coded_group': coded_group,
                             "token": token,
-                            "group_name": new_group.name,
+                            "group_name": target_group,
                             "destination": user.email,
                             "subject": "Confirm your registration"}
             send_result = email_confirmation(user.pk, **email_kwargs)
-            return redirect('invitations:account_activation_sent')
+            return redirect('account_activation_sent')
+
         else:
             context = {'form': form,
-                        'title': title}
-            return  render(request, "login_form.html", context)
+                       'title': title}
+            return render(request, "login_form.html", context)
     else:
         logging.getLogger("info_logger").info(f'Registration disabled')
         return render(request, "temp_register.html", {})
@@ -196,3 +208,4 @@ def home_view(request):
 
 # def temp_register_view(request):
 #     return render(request, "temp_register.html", {})
+

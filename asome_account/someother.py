@@ -1,13 +1,13 @@
 import os
 import random
-from datetime import date, timedelta, datetime
+import datetime
 import re
 import uuid
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.conf import settings
-# from django.core.mail import send_mail
+from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.http import int_to_base36
@@ -58,8 +58,8 @@ class InvitationKey(models.Model):
     """
     for invites being sent
     """
-    key = models.CharField(verbose_name=_('account_activation_token'), max_length=40)
-    date_invited = models.DateTimeField(auto_now_add=True)
+    key = models.CharField(max_length=40)
+    date_invited = models.DateField(default=datetime.date.today)
     from_user = models.ForeignKey(User, related_name='invitations_sent', on_delete=models.CASCADE)
     registrant = models.ForeignKey(User, null=True, blank=True, related_name='invitations_used', on_delete=models.CASCADE)
     invite_to_group = models.ForeignKey('the_list.ShopGroup', on_delete=models.CASCADE)
@@ -71,7 +71,7 @@ class InvitationKey(models.Model):
         app_label = 'invitation'
 
     def __unicode__(self):
-        return u"Invitation from %s on %s" % (self.from_user, self.date_invited)
+        return u"Invitation from %s on %s" % (self.from_user.username, self.date_invited)
 
     def is_usable(self):
         """
@@ -79,7 +79,6 @@ class InvitationKey(models.Model):
         """
         return self.registrant is None and not self.key_expired()
 
-    # noinspection PyUnresolvedReferences
     def key_expired(self):
         """
         Determine whether this ``InvitationKey`` has expired, returning
@@ -92,9 +91,8 @@ class InvitationKey(models.Model):
         current date, the key has expired and this method returns ``True``.
 
         """
-
-        expiration_date = self.date_invited + settings.ACCOUNT_INVITATION_DAYS
-        if expiration_date > datetime.today():
+        expiration_date = self.date_invited + datetime.timedelta(days=settings.ACCOUNT_INVITATION_DAYS)
+        if expiration_date > datetime.date.today():
             return False
         else:
             return True
