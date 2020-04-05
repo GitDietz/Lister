@@ -7,12 +7,13 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, HttpResponseRedirect, Http404, redirect
 from urllib.parse import urlencode
 
-from .filters import UserFilter, GroupFilter
-from .forms import ItemForm, MerchantForm, ShopGroupForm, UsersGroupsForm,NewGroupCreateForm
 import logging
+
+from .forms import ItemForm, MerchantForm, ShopGroupForm, UsersGroupsForm,NewGroupCreateForm
 from .models import Item, Merchant, ShopGroup
 
-from Proj_1.proj_base.utils import *
+from lcore.utils import *
+
 from datetime import date
 
 
@@ -70,29 +71,6 @@ def is_user_leader(request, list_no):
     else:
         logging.getLogger("info_logger").info(f' user is not leader')
         return False
-
-# class FilteredListView(ListView):
-#     filterset_class = None
-#
-#     def get_queryset(self):
-#         # Get the queryset however you usually would.  For example:
-#         queryset = super().get_queryset()
-#         # Then use the query parameters and the queryset to
-#         # instantiate a filterset and save it as an attribute
-#         # on the view instance for later.
-#         self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
-#         # Return the filtered queryset
-#         return self.filterset.qs.distinct()
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         # Pass the filterset to the template - it provides the form.
-#         context['filterset'] = self.filterset
-#         return context
-
-
-# class ItemListView(FilteredListView):
-#     filterset_class = ItemFilterSet
 
 
 #  #################################  ITEM / AKA Shop #################################
@@ -394,18 +372,26 @@ def group_list(request):
 @login_required()
 def group_delete(request, pk):
     group = get_object_or_404(ShopGroup, pk=pk)
-    if request.method == 'POST' and request.user.is_staff:
-        group.delete()
-        return HttpResponseRedirect(reverse('shop:group_list'))
+    managed_group = ShopGroup.objects.managed_by(request.user)
+    if group in managed_group:
+        if request.method == 'POST':
+            group.delete()
+            return HttpResponseRedirect(reverse('shop:group_list'))
 
-    template_name = 'group_delete.html'
-    context = {
-        'title': 'Delete group',
-        'object': group,
-        'notice': '',
-    }
-    return render(request, template_name, context)
+        template_name = 'group_delete.html'
+        context = {
+            'title': 'Delete group',
+            'object': group,
+            'notice': '',
+        }
+        return render(request, template_name, context)
+    else:
+        context = {
+            'title': 'Delete group',
+            'object': group,
+            'no_delete': 'You are not the manager of the group and can''t delete it',}
 
+        return render(request, "group_action_reject.html", context)
 
 @login_required()
 def group_remove_self(request, pk):

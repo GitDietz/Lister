@@ -11,11 +11,6 @@
     <title>{% block head_title %}My List{% endblock head_title%}</title>
     <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}">
     <link rel="stylesheet" href='{% static "css/base.css" %}'/>
-    <!--this link method is subject to the directory name not changing
-       <link rel="stylesheet" href="'/static/css/proj_base.css" />, the above makes it dynamic-->
-    <!--  the one below is for the verison 4 so the ver 5 icons dont work
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">   -->
-
 
     <style>
         {% block style %}
@@ -25,7 +20,6 @@
 </head>
     <body>
         <div id="fb-root"></div>
-        <!-- <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v3.3"></script>-->
 
         {% include "messages_display.html" %}
         <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #8C8687;">
@@ -45,23 +39,17 @@
                                 </li>
                                 {% else %}
                                 <li class="nav-item">
-                                    {#<a class="nav-link" href="{% url 'shop:shop_list' %}">List</a>#}
+                                    <a class="nav-link" href="{% url 'shop:shop_list' %}">List</a>
                                 </li>
                                 <li class="nav-item">
-                                    {#<a>Invite</a>#}
-                                    {# class="nav-link" href="{% url 'invitations:invitation_invite' %}" #}
+                                    <a class="nav-link" href="{% url 'invite' %}">Invite</a>
                                 </li>
                                 <li class="nav-item">
-                                    {#<a class="nav-link" href="{% url 'shop:group_list' %}">Groups</a>#}
+                                    <a class="nav-link" href="{% url 'shop:group_list' %}">Groups</a>
                                 </li>
                                 <li class="nav-item">
-                                    <{#a class="nav-link" href="{% url 'shop:merchant_list' %}">Merchants</a>#}
+                                    <a class="nav-link" href="{% url 'shop:merchant_list' %}">Merchants</a>
                                 </li>
-                                {% if request.user.is_staff %}
-                                <li class="nav-item">
-                                    {#<a class="nav-link" href="{% url 'shop:group_list' %}">Groups</a>#}
-                                </li>
-                                {% endif %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                                 </li>
@@ -91,24 +79,5 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.6.2/marked.min.js"></script>
 
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $(".content-markdown").each(function(){
-                var content = $(this).text()
-               // console.log("Original content now ---")
-               // console.log(content)
-                var markedContent = marked(content)
-                console.log("Marked up version ---------")
-                console.log(markedContent)
-                $(this).html(markedContent)
-            })
-             $(".content-markdown img").each(function(){
-                //this will add the class tag to all images to make it respond to the bootstrap setup
-                // i don't actually use it due to the card deck
-                //$(this).addClass("img-responsive")
-            })
-
-        })
-    </script>
     </body>
 </html>

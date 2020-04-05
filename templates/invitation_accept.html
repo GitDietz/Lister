@@ -3,14 +3,14 @@
 
 {% block content %}
 
-<h2>{% "Accept invitation" %}</h2>
+<h2>Accept invitation and complete registration</h2>
 
 <form action="" method="POST">
     {% csrf_token %}
     {{ form|crispy }}
 
 
-<input type="submit" value="{% "Complete registration" %}" />
+<input type="submit" value="Complete registration" />
 </form>
 
 {% endblock %}

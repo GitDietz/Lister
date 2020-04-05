@@ -9,8 +9,59 @@ from django.contrib.auth import (
     )
 from django.db.models import Q
 
+from .models import InvitationKey
 from the_list.models import ShopGroup
 import logging
+
+
+class InvitationAcceptForm(forms.Form):
+    first_name = forms.CharField(label='Your first Name - other members will see this', required=True)
+    last_name = forms.CharField(label='Your last Name', required=True)
+    password = forms.CharField(max_length=32, widget=forms.PasswordInput)
+
+    class Meta:
+        # model = InvitationKey
+        fields = ['first_name',
+                  'last_name,'
+                  'password']
+
+
+class InvitationKeyForm(forms.ModelForm):
+    email = forms.EmailField()
+    invite_name = forms.CharField(label="Your friend's name", required=True)
+
+    class Meta:
+        model = InvitationKey
+        fields = [
+            'email',
+            'invite_name',
+            'invite_to_group',
+        ]
+
+    def __init__(self, user, *args, **kwargs):
+        """ this limits the selection options to only the lists managed by the user"""
+        super(InvitationKeyForm, self).__init__(*args, **kwargs)
+        managed_groups = ShopGroup.objects.managed_by(user)
+        self.fields['invite_to_group'].queryset = managed_groups
+
+    def clean_email(self):
+        return self.cleaned_data['email']
+
+    def clean_invite_to_group(self):
+        return self.cleaned_data['invite_to_group']
+
+    def clean_invite_name(self):
+        return self.cleaned_data['invite_name']
+
+
+class InvitationSelectForm(forms.ModelForm):
+    # invite_choices = [('1', 'Accept'), ('2', 'Decline')]
+    # choice = forms.ChoiceField(widget=forms.RadioSelect, choices=invite_choices)
+
+    class Meta:
+        model = InvitationKey
+        fields = ['invite_to_group']
+
 
 class UserLoginForm(forms.Form):
     username = forms.CharField()
@@ -43,7 +94,7 @@ class UserLoginForm(forms.Form):
                     print('knwon user')
                     if not user.is_active:
                         raise ValidationError("This user is not active")
-        return super(UserLoginForm, self).clean(*args,**kwargs)
+        return super(UserLoginForm, self).clean(*args, **kwargs)
 
 
 class UserLoginEmailForm(forms.Form):
@@ -86,7 +137,7 @@ class UserLoginEmailForm(forms.Form):
 
 
 class UserRegisterForm(forms.ModelForm):
-    email = forms.EmailField(label='Email Address', required=True) # overrides the default
+    email = forms.EmailField(label='Email Address', required=True)  # overrides the default
     email2 = forms.EmailField(label='Confirm Email')
     first_name = forms.CharField(label='First Name (will display for others)', required=True)
     last_name = forms.CharField(label='Last Name', required=True)
@@ -108,9 +159,10 @@ class UserRegisterForm(forms.ModelForm):
         ]
         # widgets = {'username': forms.HiddenInput()}
         # initial = {'username': 'user1'}
-    #possible to use a form level clean similar to the class above - validation will then show on the form itself and not the field
+    # possible to use a form level clean similar to the class above -
+    # validation will then show on the form itself and not the field
 
-    def clean_email2(self): #this is 2 so it runs off the email2 field
+    def clean_email2(self):  # this is 2 so it runs off the email2 field
         email = self.cleaned_data.get('email')
         email2 = self.cleaned_data.get('email2')
         print(f'first is {email}, second is {email2}')

@@ -3,6 +3,7 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
+from django.utils import timezone
 
 from datetime import datetime
 import re
@@ -62,12 +63,16 @@ class InvitationKey(models.Model):
     def __str__(self):
         return f"Invitation from {self.from_user} on {self.date_invited}"
 
+    def __repr__(self):
+        return f'Invite for {self.invited_email}'
+
     def is_usable(self):
         """
         Return whether this key is still valid for registering a new user.
         """
-        return self.registrant is None and not self.key_expired()
+        return self.registrant is None and not self.key_expired
 
+    @property
     def key_expired(self):
         """
         Determine whether this ``InvitationKey`` has expired, returning
@@ -81,13 +86,11 @@ class InvitationKey(models.Model):
         """
 
         expiration_date = self.date_invited + settings.ACCOUNT_INVITATION_DAYS
-        if expiration_date > datetime.today():
+        time_now = timezone.now()
+        if expiration_date > time_now:
             return False
         else:
             return True
-            # self.date_invited + expiration_date <= datetime.datetime.now()
-
-    #key_expired.boolean = True
 
     def mark_used(self, registrant):
         """
