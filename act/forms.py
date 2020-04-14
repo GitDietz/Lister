@@ -124,7 +124,7 @@ class UserLoginEmailForm(forms.Form):
                 user = authenticate(username=username, password=password)
                 if not user:
                     logging.getLogger("info_logger").info('password fault')
-                    raise ValidationError("The password is very incorrect")
+                    raise ValidationError("The password is incorrect")
                 else:
                     logging.getLogger("info_logger").info('known user')
                     if not user.is_active:
@@ -200,3 +200,23 @@ class UserRegisterForm(forms.ModelForm):
     #         this_user + str(i)
     #         i+=1
     #     return new_username
+
+
+class ResetForm(forms.Form):
+    password = forms.CharField(widget=forms.PasswordInput)
+    password2 = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        fields = [
+            'password',
+            'password2'
+        ]
+
+    def clean_password2(self):
+        password = self.cleaned_data.get('password')
+        password2 = self.cleaned_data.get('password2')
+        print(f'first is {password}, second is {password2}')
+        if password != password2:
+            raise ValidationError('Passwords are not the same')
+
+        return password2

@@ -9,8 +9,8 @@ from urllib.parse import urlencode
 
 import logging
 
-from .forms import ItemForm, MerchantForm, ShopGroupForm, UsersGroupsForm,NewGroupCreateForm
-from .models import Item, Merchant, ShopGroup
+from .forms import ItemForm, MerchantForm, ShopGroupForm, UsersGroupsForm, NewGroupCreateForm, SupportLogForm
+from .models import Item, Merchant, ShopGroup, Support
 
 from lcore.utils import *
 
@@ -145,6 +145,10 @@ def shop_list(request):
         logging.getLogger("info_logger").info(f"redirect to group selection | user = {request.user.username}")
         redirect('shop:group_select')
     active_list_name = ShopGroup.objects.filter(id=list_active_no).first()
+    leader_names = list(active_list_name.leaders.all().values_list('username', flat=True))
+    # method above to create list: .values('fieldname') will create a tuple with key and value
+    lead = ', '.join(leader_names)
+
     user_list_options = list_choices.count()
 
     logging.getLogger("info_logger").info(f"active list is {active_list_name} | user = {request.user.username}")
@@ -185,6 +189,7 @@ def shop_list(request):
             'user_lists': user_list_options,
             'is_leader': leader_status,
             'notice': notice,
+            'leader_list': lead,
         }
         return render(request, 'item_list.html', context)
     else:
@@ -256,6 +261,38 @@ def shop_detail_ra(request, pk=None):
             return render(request, 'item_detail.html', context)
         else:
             raise Http404
+
+
+#  ################################# Support #################################
+@login_required
+def support(request):
+    logging.getLogger("info_logger").info(f'user = {request.user.username}')
+    template = 'support.html'
+    form = SupportLogForm(request.POST or None)
+    force_repeats = False
+    form_option = 'lodge'
+    message = ''
+    user_requests = Support.objects.filter(log_by=request.user)
+    if user_requests.count() > 10:
+        form_option = 'repeat'
+        message = 'You  have a number of outstanding requests already, please wait for these to be resolved'
+    else:
+        if request.method == 'POST':
+            if form.is_valid():
+                case = form.save(commit=False)
+                case.log_by = request.user
+                case.save()
+                context = {
+                    'form_option': 'done',
+                    'message_content': "Your request is recorded, we'll attend to it as soon as possible",
+                }
+        else:
+            context = {
+                'form': form,
+                'form_option': form_option,
+                'message_content': message,
+            }
+    return render(request, template, context)
 
 
 #  ################################# User's GROUP #################################
@@ -407,7 +444,7 @@ def group_remove_self(request, pk):
 
 
 @login_required()
-def group_remove_leader(request, pk, user_id):
+def group_remove_leader(request, pk, sep, user_id):
     """
     when the manager wants to remove the Leader role from a user
     """
@@ -418,7 +455,7 @@ def group_remove_leader(request, pk, user_id):
 
 
 @login_required()
-def group_remove_member(request, pk, user_id):
+def group_remove_member(request, pk, sep, user_id):
     logging.getLogger("info_logger").info(f'group = {pk}, user to remove as member = {user_id}')
     group = get_object_or_404(ShopGroup, pk=pk)
     group.members.remove(user_id)
@@ -426,7 +463,7 @@ def group_remove_member(request, pk, user_id):
 
 
 @login_required()
-def group_make_leader(request, pk, user_id):
+def group_make_leader(request, pk, sep, user_id):
     logging.getLogger("info_logger").info(f'group = {pk}, user to add as leader = {user_id}')
     group = get_object_or_404(ShopGroup, pk=pk)
     group.leaders.add(user_id)
@@ -434,7 +471,7 @@ def group_make_leader(request, pk, user_id):
 
 
 @login_required()
-def group_add_member(request, pk, user_id):
+def group_add_member(request, pk, sep, user_id):
     logging.getLogger("info_logger").info(f'group = {pk}, user to add as leader = {user_id}')
     group = get_object_or_404(ShopGroup, pk=pk)
     group.members.add(user_id)

@@ -26,7 +26,7 @@ def url_domain():
 
 
 def url_builder(key):
-    return url_domain() + 'invite/invited/' + key + '/'
+    return url_domain() + 'invited/' + key + '/'
 
 
 def url_builder_existing_user():
@@ -34,9 +34,13 @@ def url_builder_existing_user():
 
 
 def url_builder_confirmation(uidb64, token, shopgroup):
-    return url_domain() + 'invite/activate/' + uidb64 + '/' + token + '/' + shopgroup + '/'
+    return url_domain() + 'activate/' + uidb64 + '/' + token + '/' + shopgroup + '/'
     # r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/(?P<group>[0-9A-Za-z_\-]+)/$'
 
+
+def url_builder_reset(uidb64, token):
+    return url_domain() + 'pset/' + uidb64 + '/' + token + '/'
+    # 'pset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'
 
 def body_builder(url, invitee, user_name, group_name):
     body = f'Dear {invitee}, {user_name} invites you to become a member of the group "{group_name}" <br>'
@@ -51,6 +55,13 @@ def body_builder_confirm_email(url, user_name, group_name):
     body += 'As the final step, click on the link below to return to the site to confirm your email<br> and start using it!'
     body += '<br>' + url + '<br><br>We hope to see you soon!'
     body += '<br>From the team at YourList'
+    return body
+
+
+def body_builder_reset(url):
+    body = f'Dear User <br> <br>'
+    body += 'The link to reset your password is below<br>Click on it to return to the site and reset it'
+    body += '<br>' + url + '<br>From the team at YourList'
     return body
 
 
@@ -111,6 +122,18 @@ def email_main(existing_user, **email_kwargs):
 def email_confirmation(user_id, **email_kwargs):
     url = url_builder_confirmation(email_kwargs.get('coded_user'), email_kwargs.get('token'), email_kwargs.get('coded_group'))
     body = body_builder_confirm_email(url, email_kwargs.get('user'), email_kwargs.get('group_name'))
+    force_fail = False
+    if force_fail:
+        result = body
+    else:
+        result = send_email(body, email_kwargs.get('destination'), email_kwargs.get('subject'))
+    # result will be 0 if success or the body if failed
+    return result
+
+
+def email_reset(**email_kwargs):
+    url = url_builder_reset(email_kwargs.get('coded_user'), email_kwargs.get('token'))
+    body = body_builder_reset(url)
     force_fail = False
     if force_fail:
         result = body

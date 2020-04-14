@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from django.utils.safestring import mark_safe
-from .models import Item, Merchant,ShopGroup
+from .models import Item, Merchant, ShopGroup, Support
 
 
 class ItemForm(forms.ModelForm):
@@ -99,6 +99,14 @@ class ShopGroupForm(forms.ModelForm):
             return self.cleaned_data['leaders']
         else:
             raise forms.ValidationError('Only listed members can be leaders')
+
+
+class SupportLogForm(forms.ModelForm):
+    class Meta:
+        model = Support
+        fields = [
+            'issue',
+        ]
 
 
 class NewGroupCreateForm(forms.ModelForm):

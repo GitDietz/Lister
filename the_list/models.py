@@ -144,3 +144,17 @@ class Item(models.Model):
             return f'{self.description} [{self.quantity}]'
         else:
             return self.description
+
+
+class Support(models.Model):
+    log_by = models.ForeignKey(settings.AUTH_USER_MODEL, default=1, related_name='raise_by', on_delete=models.CASCADE)
+    date_raised = models.DateField(auto_now=False, auto_now_add=True)
+    issue = models.CharField(max_length=300)
+    in_progress = models.BooleanField(default=False)
+    resolved = models.BooleanField(default=False)
+    resolution = models.CharField(max_length=300)
+    date_closed = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.issue)
+

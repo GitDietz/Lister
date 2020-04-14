@@ -8,6 +8,7 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponseRedirect, Http404, HttpResponse
@@ -15,8 +16,8 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from .email import email_confirmation, email_main
-from .forms import UserLoginForm, UserRegisterForm, UserLoginEmailForm, InvitationKeyForm, InvitationAcceptForm
+from .email import email_confirmation, email_main, email_reset
+from .forms import UserLoginForm, UserRegisterForm, UserLoginEmailForm, InvitationKeyForm, InvitationAcceptForm, ResetForm
 from lcore.utils import in_post
 from .models import InvitationKey
 from .token import account_activation_token
@@ -97,13 +98,14 @@ def activate(request, uidb64, token, group):
         logging.getLogger("info_logger").info(f'update user and group')
         new_user.is_active = True
         new_user.save()
-        login(request, new_user)
+
         # activate the group and set the properties required
         new_group.disabled = False
         new_group.save()
         new_group.members.add(new_user)
         new_group.leaders.add(new_user)
 
+        login(request, new_user)
         request.session['list'] = new_group.id
         logging.getLogger("info_logger").info(f'user list set in session')
         return redirect('set_group')
@@ -358,6 +360,7 @@ def login_email(request):
     next = request.GET.get('next')  # this is available when the login required redirected to user to log in
     form = UserLoginEmailForm(request.POST or None)
     title = 'Login'
+    form_mode = 'entry'
     if request.method == 'POST' and form.is_valid():
         logging.getLogger("info_logger").info(f'form submitted')
         email = form.cleaned_data.get('email')
@@ -375,12 +378,80 @@ def login_email(request):
             else:
                 logging.getLogger("info_logger").info(f'divert to set group')
                 return redirect('set_group')
-    else:
-        print(form.errors)
+    elif request.method == 'POST' and not form.is_valid():
+        email = form.cleaned_data.get('email')
+        user = User.objects.get(email=email)
+        if email:
+            form_mode = 'pw_reset'
+            #this has to contain the email at least and any password
+            if 'reset' in request.POST:
+                coded_user = force_text(urlsafe_base64_encode(force_bytes(user.pk)))
+                token = account_activation_token.make_token(user)
+                email_kwargs = {"coded_user": coded_user,
+                                "token": token,
+                                "destination": email,
+                                "subject": "Reset request"}
+                send_result = email_reset(**email_kwargs)
+                return redirect('password_link_sent')
+
 
     context = {'form': form,
-               'title': title}
+               'title': title,
+               'mode': form_mode}
     return render(request, "login_form.html", context=context)
+
+
+def password_link_sent(request):
+    content_body = ('<p>Reset link sent!<br>'
+                    'To complete the process, check your mailbox for an email from us, then '
+                    '<br> Click on the link that will allow you to reset the password <br><br>'
+                    'See you soon ....</p>')
+    context = {'title': 'Sent email',
+               'content_body': content_body}
+    return render(request, 'activation_sent.html', context)
+
+
+# def password_reset(request, user_email):
+#     logging.getLogger("info_logger").info(f'Enter')
+#     if request.user.is_authenticated:
+#         return redirect('/')
+#     # user is not authenticated, so there is no user object
+#     user_instance = get_object_or_404(User, user=request.user)
+#     if user_instance:
+#         # create the token
+#         pass
+#     else:
+#         pass
+
+
+def password_validation(request, uidb64, token):
+    try:
+        logging.getLogger("info_logger").info(f'existing user url decode start')
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        new_user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        logging.getLogger("info_logger").info(f'user decode failed')
+        new_user = None
+
+    if new_user is not None and account_activation_token.check_token(new_user, token):
+        logging.getLogger("info_logger").info(f'update user and group')
+        # need a form
+        form = ResetForm(request.POST or None)
+        if request.method == 'POST' and form.is_valid():
+            new_user.password = make_password(form.cleaned_data.get('password2'))  # make_password
+            new_user.save()
+            login(request, new_user)
+            logging.getLogger("info_logger").info(f'user logged in')
+            return redirect('set_group')
+        else:
+            context = {
+                'form': form,
+
+            }
+            return render(request, 'pw_reset.html', context)
+    else:
+        return render(request, 'activation_invalid.html')
+        # update this to another form or multipurpose
 
 
 @login_required()

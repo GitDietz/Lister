@@ -11,6 +11,9 @@
     {% if user_lists > 1 %}
         <a href="{% url 'shop:group_select' %}" class="top-menu"><i class="far fa-random" title="Switch to other list"></i></a>
     {% endif %}<br>
+    {% if leader_list %}
+        Leader/s: {{ leader_list }}<br>
+    {% endif%}
 <a href="{% url 'shop:shop_create' %}" class="top-menu">Add item</a><br>
 {% if object_list%}
 
