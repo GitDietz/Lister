@@ -33,9 +33,9 @@ ACCOUNT_INVITATION_DAYS = datetime.timedelta(days=3)
 REGISTRATIONS = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['getafix.pythonanywhere.com']
 
 
 # Application definition
