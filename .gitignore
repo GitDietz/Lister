@@ -137,6 +137,8 @@ dmypy.json
 .idea
 .idea/*
 .idea/workspace.xml
+.DS_Store
+
 
 # Dev stuff
 DevNotes.txt
