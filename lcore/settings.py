@@ -19,7 +19,7 @@ from django.utils.log import DEFAULT_LOGGING
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+# print(f'Base dir is: {BASE_DIR}')
 # reading config variables
 EMAIL_KEY = config('MAIL_API_KEY') # no default or cast used
 EMAIL_FROM = config('MAIL_SENDER')
@@ -154,10 +154,13 @@ LOGIN_URL = '/login/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_cdn")
-
+# print(f'Static files dir is: {STATICFILES_DIRS}')
+STATIC_ROOT = os.path.join(BASE_DIR, "static_cdn")
+# print(f'Static root is :{STATIC_ROOT}')
 # LOGGING CONFIG
 LOG_ROOT = os.path.join(BASE_DIR, 'logs')
+#print(f'Log root is :{LOG_ROOT}')
+
 # importing logger settings
 try:
     from .logger_settings import *
