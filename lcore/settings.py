@@ -23,10 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EMAIL_KEY = config('MAIL_API_KEY') # no default or cast used
 EMAIL_FROM = config('MAIL_SENDER')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('NEW_SK')
 PASSWORD_RESET_TIMEOUT = 600
 ACCOUNT_INVITATION_DAYS = datetime.timedelta(days=3)
@@ -95,13 +92,20 @@ WSGI_APPLICATION = 'lcore.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'listapp',
-        'USER': config('DB_USER_ADMIN'),
-        'PASSWORD': config('DB_ADMIN_PW'),
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': config('DB_MYSQL_DB'),
+        'USER': config('DB_MYSQL_USER'),
+        'PASSWORD': config('DB_MYSQL_PW'),
+        'HOST': 'Getafix.mysql.pythonanywhere-services.com',
     },
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'listapp',
+    #     'USER': config('DB_USER_ADMIN'),
+    #     'PASSWORD': config('DB_ADMIN_PW'),
+    #     'HOST': 'Getafix-1580.postgres.pythonanywhere-services.com',
+    #     'PORT': '11580',
+    # },
     'original': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
@@ -150,10 +154,14 @@ LOGIN_URL = '/login/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_cdn")
+
+#STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), "static_cdn") updated 21/4
+STATIC_ROOT = os.path.join(BASE_DIR, "static_cdn")
 
 # LOGGING CONFIG
-LOG_ROOT = os.path.join(BASE_DIR, 'logs')
+LOG_PATH = os.path.join(os.path.dirname(BASE_DIR), 'logs')
+if not os.path.join(LOG_PATH):
+    os.mkdir(LOG_PATH)
 # importing logger settings
 try:
     from .logger_settings import *

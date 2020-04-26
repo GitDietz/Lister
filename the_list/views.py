@@ -382,7 +382,7 @@ def group_maintenance(request, pk=None):
             'unrelated': unrelated,
             'group_id': pk,
             'notice': notice,
-            'mode': 'debug',
+            'mode': 'prod',
         }
         return render(request, 'group_manage.html', context)
     else:

@@ -13,16 +13,17 @@ def mail_config_tester():
 
 
 def url_domain():
-    try:
-        ip = socket.gethostbyname(socket.gethostname())
-        if ip == '127.0.0.1':
-            return 'http://' + ip + ':8000/'
-        elif ip == '192.168.1.118':
-            return 'http://127.0.0.1:8000/'
-        else:
-            return 'http://' + ip + '/'
-    except:
-        return 'http://127.0.0.1:8000/'
+    return 'http://getafix.pythonanywhere.com/'
+    # try:
+    #     ip = socket.gethostbyname(socket.gethostname())
+    #     if ip == '127.0.0.1':
+    #         return 'http://' + ip + ':8000/'
+    #     elif ip == '192.168.1.118':
+    #         return 'http://127.0.0.1:8000/'
+    #     else:
+    #         return 'http://' + ip + '/'
+    # except:
+    #     return 'http://127.0.0.1:8000/'
 
 
 def url_builder(key):
