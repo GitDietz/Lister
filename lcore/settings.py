@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import datetime
 import os
+import socket
 import logging.config
 from decouple import config
 from django.utils.log import DEFAULT_LOGGING
@@ -33,10 +34,13 @@ ACCOUNT_INVITATION_DAYS = datetime.timedelta(days=3)
 REGISTRATIONS = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+soc = socket.gethostname()
+if soc.endswith('.local') or 'Dieter' in soc:
+    ALLOWED_HOSTS = ['example.com', '127.0.0.1', 'localhost', ]
+else:
+    ALLOWED_HOSTS = ['getafix.pythonanywhere.com']
 
 # Application definition
 

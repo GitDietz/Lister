@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -371,6 +372,10 @@ def group_maintenance(request, pk=None):
         members = all_members.exclude(pk__in=leaders)
         all_users = User.objects.all()
         unrelated = all_users.exclude(pk__in=all_members)
+        if settings.DEBUG:
+            mode = 'DEBUG'
+        else:
+            mode = 'PROD'
         notice = ''
         if request.method == "POST":
             pass
@@ -382,7 +387,7 @@ def group_maintenance(request, pk=None):
             'unrelated': unrelated,
             'group_id': pk,
             'notice': notice,
-            'mode': 'prod',
+            'mode': mode,
         }
         return render(request, 'group_manage.html', context)
     else:
