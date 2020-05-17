@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-
-<h1>{{ title }}</h1>
-
 <p class="font-italic">{% if notice %}{{ notice }}{% endif %}</p>
 <form method="POST" action="." >{% csrf_token %}
     {{ form|crispy }}
-    Active list = {{ active_list }}
+    <h1>Your active list = {{ active_list }}</h1>
     {% if user_lists > 1 %}
         <a href="{% url 'shop:group_select' %}" class="top-menu"><i class="far fa-random" title="Switch to other list"></i></a>
     {% endif %}<br>
