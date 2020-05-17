@@ -73,6 +73,11 @@ def create_username(first_name, last_name):
 # ############################## VIEWS #########################
 
 
+def about(request):
+    logging.getLogger("info_logger").info(f'logging out {request.user}')
+    return render(request, "about.html", {})
+
+
 def account_activation_sent(request):
     content_body = ('<p>Thank you for registering!<br>'
                     'To complete the process, check your mailbox for an email from us, then '

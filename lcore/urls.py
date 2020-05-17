@@ -9,6 +9,7 @@ from act.views import *
 urlpatterns = [
     re_path('activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/(?P<group>[0-9A-Za-z_\-]+)/',
             activate, name='activate'),
+    path('about/', about, name='about'),
     path('activation_sent/', account_activation_sent, name='account_activation_sent'),
     path('admin/', admin.site.urls),
     path('complete/', complete, name='complete'),

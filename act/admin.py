@@ -4,7 +4,7 @@ from .models import InvitationKey
 
 
 class InviteModelAdmin(admin.ModelAdmin):
-    list_display = ['invited_email', 'invited_user', 'from_user_id']
+    list_display = ['invited_email', 'invite_to_group', 'from_user']
 
     class Meta:
         model = InvitationKey

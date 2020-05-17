@@ -22,3 +22,12 @@ h1 {
 .nav a {
     color: #e5dbdb; //grey for all the links
 }
+
+li.nav-item a.nav-links {
+    color: #e5dbdb;
+}
+
+div.dropdown-menu a.dropdown-item {
+    color: #505050;
+}
+

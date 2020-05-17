@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+<div class="jumbotron">
+    <h1 class="display-4">How this works</h1>
+    <p class="lead">Manage lists - one or several different ones, each with different members</p>
+    <hr class="my-4">
+    <h2>To Get started</h2>
+    <p>Register and create a group in the process. Give the group a short name and purpose, then invite (Invite menu) people to join the group</p>
+    <p>You can create additional groups for different purposes (Group Menu)</p>
+    <h2>Who can do what?</h2>
+    <p>You as the creator of the group manages the group memberships</p>
+    <p>You can set members to be leaders / revoke the leader role or remove them from the group</p>
+    <h2>As a Leader you can do?</h2>
+    <p>Mark items as complete, delete them or edit them</p>
+    <h2>As a member, you can...</h2>
+    <p>Add Merchants (Merchant Menu item) to the merchant list for a group, Add items and edit your own items. See the items of others, but not delete/edit them</p>
+    <p class="lead">
+        {% if user.is_authenticated %}
+            <a class="btn btn-primary btn-lg" href="{% url 'shop:shop_list' %}" role="button">Go to your list</a>
+        {% else %}
+            <a class="btn btn-primary btn-lg" href="{% url 'register' %}" role="button">Register</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Sign in</a>
+        {% endif %}
+    </p>
+</div>
+
+
+{% endblock content%}
+
+
+
+
+

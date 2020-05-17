@@ -159,7 +159,7 @@ def shop_list(request):
     if request.user.is_authenticated:
         queryset_list = Item.objects.to_get_by_group(list_active_no)
         notice = ''
-        if request.POST: # and (request.user.is_staff or leader_status):
+        if request.POST:
             logging.getLogger("info_logger").info(f"form submitted | user = {request.user.username}")
             logging.getLogger("info_logger").info(f"which item to purchase or cancel | user = {request.user.username}")
             cancel_item = in_post(request.POST, 'cancel_item')

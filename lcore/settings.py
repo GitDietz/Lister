@@ -24,9 +24,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EMAIL_KEY = config('MAIL_API_KEY') # no default or cast used
 EMAIL_FROM = config('MAIL_SENDER')
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('NEW_SK')
 PASSWORD_RESET_TIMEOUT = 600
