@@ -93,8 +93,9 @@ def shop_create(request):
         # get the objects still to purchase and check if this new one is among them
         qs_tobuy = Item.objects.to_get()
         item = form.save(commit=False)
-        this_found = qs_tobuy.filter(Q(description__iexact=item.description))
         for_group = ShopGroup.objects.filter(id=list_active_no).first()
+        this_found = qs_tobuy.filter(Q(description__iexact=item.description) & Q(in_group=for_group) )
+
         if this_found:
             logging.getLogger("info_logger").info(f"item exists | user = {request.user.username}")
             notice = 'Already listed : ' + item.description
@@ -103,9 +104,7 @@ def shop_create(request):
             item.in_group = for_group
             item.description = item.description.title()
             item.requested = request.user
-            # vendor_id=request.POST.get('vendor_select') #this returns the relevant ID i selected
             vendor_id = item.to_get_from
-            # this_merchant = Merchant.objects.get(pk=vendor_id)
             logging.getLogger("info_logger").info(f"item saving for vendor = {vendor_id}")
             item.to_get_from = vendor_id  # this_merchant
             item.date_requested = date.today()
