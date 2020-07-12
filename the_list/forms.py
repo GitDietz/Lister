@@ -33,6 +33,7 @@ class ItemForm(forms.ModelForm):
         # super(ItemForm, self).__init__(*args, **kwargs)
         super().__init__(*args, **kwargs)
         self.fields['to_get_from'].queryset = active_list
+        self.fields['description'].widget.attrs.update({'autofocus': 'autofocus'})
         # not used part of the readonly
         # self.fields['requested'].widget.attrs['readonly'] = True
 
