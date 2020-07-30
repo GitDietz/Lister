@@ -5,6 +5,19 @@ from django.conf import settings
 
 
 # ## Model Managers ## #
+class CategoryManager(models.Manager):
+    def all(self):
+        qs = super(CategoryManager, self).all()
+        return qs
+
+    def for_group_active(self, group_id):
+        qs = super(CategoryManager, self).filter(active=True).filter(in_group=group_id)
+        return qs
+
+    def for_group_all(self, group_id):
+        qs = super(CategoryManager, self).filter(in_group=group_id)
+        return qs
+
 
 class ItemManager(models.Manager):
     def all(self):
@@ -60,6 +73,13 @@ class ShopGroupManager(models.Manager):
     def leaders(self, user):
         qs = super(ShopGroupManager, self).filter(leaders=user)
         return qs
+
+
+class ReferenceManager(models.Manager):
+    def all(self):
+        qs = super(ReferenceManager, self).all()
+        return qs
+
 
 # ## Models ## #
 
@@ -157,4 +177,39 @@ class Support(models.Model):
 
     def __str__(self):
         return str(self.issue)
+
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    in_group = models.ForeignKey(ShopGroup, blank=False, null=False, on_delete=models.CASCADE)
+    active = models.BooleanField(blank=False, null=False, default=True)
+    objects = CategoryManager()
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        label = self.name.title()
+        return str(label)
+
+
+class ReferenceItem(models.Model):
+    created = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, related_name='created_by', on_delete=models.CASCADE)
+    description = models.CharField(max_length=100)
+    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.PROTECT)
+    recommendation = models.CharField(max_length=100)
+    date_added = models.DateField(auto_now=False, auto_now_add=True)
+    in_group = models.ForeignKey(ShopGroup, blank=False, null=False, on_delete=models.CASCADE)
+    objects = ReferenceManager()
+
+    class Meta:
+        ordering = ['description']
+
+    def __str__(self):
+        label = self.category + ':' + self.description.title()
+        return str(label)
+
+
+
 

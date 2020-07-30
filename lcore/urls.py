@@ -12,6 +12,7 @@ urlpatterns = [
     path('about/', about, name='about'),
     path('activation_sent/', account_activation_sent, name='account_activation_sent'),
     path('admin/', admin.site.urls),
+    path('alternate/', alternate, name='alternate'),
     path('complete/', complete, name='complete'),
     # path('invite/', include(('invitation.urls', 'invitation'), namespace='invitations')),
     path('invite/', invite, name='invite'),

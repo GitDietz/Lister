@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Item, Merchant, ShopGroup
+from .models import Item, Merchant, ShopGroup, ReferenceItem
 
 
 class ItemModelAdmin(admin.ModelAdmin):
@@ -31,3 +31,13 @@ class ShopGroupModelAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ShopGroup, ShopGroupModelAdmin)
+
+
+class ReferenceModelAdmin(admin.ModelAdmin):
+    list_display = ['description', 'in_group', 'date_added']
+
+    class Meta:
+        model = ReferenceItem
+
+
+admin.site.register(ReferenceItem, ReferenceModelAdmin)

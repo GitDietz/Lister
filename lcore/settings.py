@@ -156,11 +156,51 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static_cdn")
 # print(f'Static root is :{STATIC_ROOT}')
 # LOGGING CONFIG
 LOG_ROOT = os.path.join(BASE_DIR, 'logs')
-#print(f'Log root is :{LOG_ROOT}')
+LOG_ERROR = os.path.join(LOG_ROOT, 'ErrorLoggers.log')
+LOG_INFO = os.path.join(LOG_ROOT, 'InfoLoggers.log')
 
-# importing logger settings
-try:
-    from .logger_settings import *
-except Exception as e:
-    # in case of any error, pass silently.
-    pass
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'large': {
+            'format': '%(asctime)s  %(levelname)s  %(process)d  %(funcName)s  %(lineno)d  %(message)s  '
+        },
+        'med': {
+            'format': '%(asctime)s  %(levelname)s [%(module)s-%(funcName)s] %(message)s'
+        },
+        'tiny': {
+            'format': '%(asctime)s  %(message)s'
+        }
+    },
+    'handlers': {
+        'errors_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'interval': 1,
+            'filename': LOG_ERROR,
+            'formatter': 'large',
+        },
+        'info_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'when': 'midnight',
+            'interval': 1,
+            'filename': LOG_INFO,
+            'formatter': 'med',
+            },
+    },
+    'loggers': {
+        'error_logger': {
+            'handlers': ['errors_file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'info_logger': {
+            'handlers': ['info_file'],
+            'level': 'INFO',
+            'propagate': False,
+            },
+        },
+    }

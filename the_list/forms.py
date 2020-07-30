@@ -3,7 +3,27 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from django.utils.safestring import mark_safe
-from .models import Item, Merchant, ShopGroup, Support
+from .models import Item, Merchant, ShopGroup, Support, ReferenceItem, Category
+
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = [
+            'name',
+            'active',
+            ]
+
+    def __init__(self, *args, **kwargs):
+        """ this limits the selection options to only the active list for the user"""
+        list = kwargs.pop('list')
+        initial_value = kwargs.pop('default')
+        active_list = ShopGroup.objects.filter(id=list)
+
+        super(CategoryForm, self).__init__(*args, **kwargs)
+
+        self.fields['in_group'].queryset = active_list
+        self.fields['in_group'].initial = initial_value
 
 
 class ItemForm(forms.ModelForm):
@@ -47,6 +67,15 @@ class ItemForm(forms.ModelForm):
         return self.cleaned_data['quantity']
 
 
+class RefForm(forms.ModelForm):
+    class Meta:
+        model = ReferenceItem
+        fields = [
+            'description',
+            'category',
+            'recommendation'
+        ]
+
 
 class UsersGroupsForm(forms.ModelForm):
     groups_for_user = forms.ModelChoiceField(queryset=ShopGroup.objects.all())
@@ -77,13 +106,6 @@ class MerchantForm(forms.ModelForm):
 
         self.fields['for_group'].queryset = active_list
         self.fields['for_group'].initial = initial_value
-
-
-class MerchantForm_RA(forms.ModelForm):
-    # the original form
-    class Meta:
-        model = Merchant
-        fields = ['name']
 
 
 class ShopGroupForm(forms.ModelForm):

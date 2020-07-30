@@ -128,6 +128,11 @@ def account_activation_sent(request):
     return render(request, 'activation_sent.html', context)
 
 
+def alternate(request):
+    logging.getLogger("info_logger").info(f'test alternate {request.user}')
+    return render(request, "alternate.html", {})
+
+
 @login_required()
 def complete(request):
     template_name = 'invitation_complete.html'

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.db import DatabaseError
@@ -135,6 +136,9 @@ def shop_list(request):
     list will only be one the user is a member of
     """
     # get the active list for the user
+    #Site.objects.clear_cache()
+    domain = Site.objects.get_current()
+    print(f' domain is {domain}')
     logging.getLogger("info_logger").info(f"view entry | user = {request.user.username}")
     list_choices = ShopGroup.objects.filter(members=request.user)
     if not list_choices:
@@ -232,35 +236,83 @@ def shop_detail(request, pk):
         return redirect('shop:shop_list')
 
 
-def shop_detail_ra(request, pk=None):
-    # really over complicated this one - OBSOLETE
+#  ################################# reference list views #################################
+@login_required
+def category_create(request):
 
-    print(f'Shop|detail|user = {request.user.username}')
-
-    instance = get_object_or_404(Item, id=pk)
-    form = ItemForm(instance=instance)
-    context = {
-        'instance': instance,
-        'description': instance.description,
-        'form': form,
-    }
-    if request.method == 'POST':
+    list_choices, user_list_options, list_active_no, active_list_name = get_user_list_property(request)
+    form = CategoryForm(request.POST or None, list=list_active_no, default=active_list_name)
+    if request.method == "POST":
+        logging.getLogger("info_logger").info(f'from submitted')
         if form.is_valid():
-            updated_desc = form.cleaned_data['description']
-            updated_from = form.cleaned_data['to_get_from']
-            instance.description = updated_desc
-            instance.to_get_from = updated_from
-            instance.save()
+            try:
+                item = form.save(commit=False)
+                item.name = form.cleaned_data['name'].title()
+                # Adding list reference
+                # item.for_group = active_list_name
+                item.save()
+                return HttpResponseRedirect(reverse('shop:merchant_list'))
+            except DatabaseError:
+                raise ValidationError('That Merchant already exists in this group')
+        else:
+            logging.getLogger("info_logger").info(f'Error on form {form.errors}')
+
+    template_name = 'merchant.html'
+    context = {
+        'title': 'Create Merchant',
+        'form': form,
+        'notice': '',
+    }
+    return render(request, template_name, context)
+
+
+@login_required
+def reference_create(request):
+    """
+    create reference list item
+    """
+    logging.getLogger("info_logger").info(f"reference create | user = {request.user.username}")
+    # list_choices, user_list_options, list_active_no, active_list_name = get_user_list_property(request)
+    form = ItemForm(request.POST or None, list=list_active_no)
+    title = 'Add purchase items'
+    notice = ''
+    if form.is_valid():
+        logging.getLogger("info_logger").info(f"form valid | user = {request.user.username}")
+
+        # get the objects still to purchase and check if this new one is among them
+        qs_tobuy = Item.objects.to_get()
+        item = form.save(commit=False)
+        for_group = ShopGroup.objects.filter(id=list_active_no).first()
+        this_found = qs_tobuy.filter(Q(description__iexact=item.description) & Q(in_group=for_group))
+
+        if this_found:
+            logging.getLogger("info_logger").info(f"item exists | user = {request.user.username}")
+            notice = 'Already listed : ' + item.description
+        else:
+            logging.getLogger("info_logger").info(f"item will be added | user = {request.user.username}")
+            item.in_group = for_group
+            item.description = item.description.title()
+            item.requested = request.user
+            vendor_id = item.to_get_from
+            logging.getLogger("info_logger").info(f"item saving for vendor = {vendor_id}")
+            item.to_get_from = vendor_id  # this_merchant
+            item.date_requested = date.today()
+            item.save()
+            notice = 'Added ' + item.description
+
+        if 'add_one' in request.POST:
             return redirect('shop:shop_list')
         else:
-            print(f'Error on the form : {form.errors}')
+            form = ItemForm(None, list=list_active_no)
 
-            return render(request, 'item_detail.html', context)
-    else:
-        if request.user == instance.requested or request.user.is_staff:
-            return render(request, 'item_detail.html', context)
-        else:
-            raise Http404
+    context = {
+        'title': title,
+        'form': form,
+        'notice': notice,
+        'selected_list': active_list_name,
+        'no_of_lists': user_list_options,
+    }
+    return render(request, 'item_create.html', context)
 
 
 #  ################################# Support #################################
